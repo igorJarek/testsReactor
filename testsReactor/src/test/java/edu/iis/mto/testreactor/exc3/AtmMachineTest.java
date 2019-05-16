@@ -7,7 +7,11 @@ import static org.mockito.Mockito.*;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.Mockito;
 
+import java.util.List;
 import java.util.Optional;
 
 public class AtmMachineTest {
@@ -67,6 +71,17 @@ public class AtmMachineTest {
         doNothing().when(bankService).abort(authenticationToken);
 
         when(bankService.charge(authenticationToken, widthdrawCorrectMoney)).thenReturn(false);
+        atmMachine.withdraw(widthdrawCorrectMoney, card);
+    }
+
+    @Test(expected = MoneyDepotException.class)
+    public void ifMoneyDepotCanNotWithdrawMoneyShouldThrowMoneyDepotException() {
+        when(cardProviderService.authorize(card)).thenReturn(Optional.of(authenticationToken));
+        doNothing().when(bankService).startTransaction(authenticationToken);
+        doNothing().when(bankService).abort(authenticationToken);
+
+        when(bankService.charge(authenticationToken, widthdrawCorrectMoney)).thenReturn(true);
+        when(moneyDepot.releaseBanknotes(Mockito.any())).thenReturn(false);
         atmMachine.withdraw(widthdrawCorrectMoney, card);
     }
 }
