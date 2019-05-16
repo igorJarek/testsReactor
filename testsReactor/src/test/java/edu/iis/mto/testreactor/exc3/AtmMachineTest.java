@@ -10,19 +10,27 @@ import org.junit.Test;
 
 public class AtmMachineTest {
 
+    private CardProviderService cardProviderService;
+    private BankService bankService;
+    private MoneyDepot moneyDepot;
+
+    private AtmMachine atmMachine;
+    private Money widthdrawNegativeMoney;
+    private Card card;
+
     @Before
     public void setUp() {
-        CardProviderService cardProviderService = mock(CardProviderService.class);
-        BankService bankService = mock(BankService.class);
-        MoneyDepot moneyDepot = mock(MoneyDepot.class);
-        AtmMachine atmMachine = new AtmMachine(cardProviderService, bankService, moneyDepot);
+        cardProviderService = mock(CardProviderService.class);
+        bankService = mock(BankService.class);
+        moneyDepot = mock(MoneyDepot.class);
+        atmMachine = new AtmMachine(cardProviderService, bankService, moneyDepot);
 
-        Money widthdrawMoney = Money.builder().withAmount(10).withCurrency(Currency.PL).build();
-        Card.builder().withCardNumber("123456").withPinNumber(1234).build();
+        widthdrawNegativeMoney = Money.builder().withAmount(-10).withCurrency(Currency.PL).build();
+        card = Card.builder().withCardNumber("123456").withPinNumber(1234).build();
     }
 
-    @Test
-    public void test() {
-
+    @Test(expected = WrongMoneyAmountException.class)
+    public void ifMoneyAmountValueIsNegativeShouldThrowWrongMoneyAmountException() {
+        atmMachine.withdraw(widthdrawNegativeMoney, card);
     }
 }
