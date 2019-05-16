@@ -22,6 +22,7 @@ public class AtmMachineTest {
     private Money widthdrawStrangeAmountMoney;
     private Money widthdrawCorrectMoney;
     private Card card;
+    private AuthenticationToken authenticationToken;
 
     @Before
     public void setUp() {
@@ -35,6 +36,7 @@ public class AtmMachineTest {
         widthdrawStrangeAmountMoney = Money.builder().withAmount(15).withCurrency(Currency.PL).build();
         widthdrawCorrectMoney = Money.builder().withAmount(50).withCurrency(Currency.PL).build();
         card = Card.builder().withCardNumber("123456").withPinNumber(1234).build();
+        authenticationToken = AuthenticationToken.builder().withAuthorizationCode(112233).withUserId("112233").build();
     }
 
     @Test(expected = WrongMoneyAmountException.class)
@@ -55,6 +57,16 @@ public class AtmMachineTest {
     @Test(expected = CardAuthorizationException.class)
     public void whenAtmMachineCanNotAuthorizeCardShouldThrowCardAuthorizationException() {
         when(cardProviderService.authorize(card)).thenReturn(Optional.ofNullable(null));
+        atmMachine.withdraw(widthdrawCorrectMoney, card);
+    }
+
+    @Test(expected = InsufficientFundsException.class)
+    public void ifOnTheCardDoNotExistsEnoughMoneyShouldThrowInsufficientFundsException() {
+        when(cardProviderService.authorize(card)).thenReturn(Optional.of(authenticationToken));
+        doNothing().when(bankService).startTransaction(authenticationToken);
+        doNothing().when(bankService).abort(authenticationToken);
+
+        when(bankService.charge(authenticationToken, widthdrawCorrectMoney)).thenReturn(false);
         atmMachine.withdraw(widthdrawCorrectMoney, card);
     }
 }
