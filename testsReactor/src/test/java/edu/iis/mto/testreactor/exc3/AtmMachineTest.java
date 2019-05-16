@@ -16,6 +16,7 @@ public class AtmMachineTest {
 
     private AtmMachine atmMachine;
     private Money widthdrawNegativeMoney;
+    private Money widthdrawZeroMoney;
     private Card card;
 
     @Before
@@ -26,11 +27,17 @@ public class AtmMachineTest {
         atmMachine = new AtmMachine(cardProviderService, bankService, moneyDepot);
 
         widthdrawNegativeMoney = Money.builder().withAmount(-10).withCurrency(Currency.PL).build();
+        widthdrawZeroMoney = Money.builder().withAmount(0).withCurrency(Currency.PL).build();
         card = Card.builder().withCardNumber("123456").withPinNumber(1234).build();
     }
 
     @Test(expected = WrongMoneyAmountException.class)
     public void ifMoneyAmountValueIsNegativeShouldThrowWrongMoneyAmountException() {
         atmMachine.withdraw(widthdrawNegativeMoney, card);
+    }
+
+    @Test(expected = WrongMoneyAmountException.class)
+    public void ifMoneyAmountValueIsZeroShouldThrowWrongMoneyAmountException() {
+        atmMachine.withdraw(widthdrawZeroMoney, card);
     }
 }
